@@ -38,7 +38,7 @@ public class AnimationSampleActivity extends Activity {
                         break;
 
                     case 1:
-                        showcaseView.setShowcase(new ViewTarget(textView3), true);
+                        showcaseView.setShowcase(new ViewTarget(textView3), true, 0.5f);
                         break;
 
                     case 2:

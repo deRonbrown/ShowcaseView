@@ -37,6 +37,8 @@ import com.espian.showcaseview.utils.Calculator;
 import com.espian.showcaseview.utils.PointAnimator;
 import com.github.espiandev.showcaseview.R;
 import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorSet;
+import com.nineoldandroids.animation.ObjectAnimator;
 
 import static com.espian.showcaseview.anim.AnimationUtils.AnimationEndListener;
 import static com.espian.showcaseview.anim.AnimationUtils.AnimationStartListener;
@@ -236,6 +238,10 @@ public class ShowcaseView extends RelativeLayout
     }
 
     public void setShowcase(final Target target, final boolean animate) {
+        setShowcase(target, animate, scaleMultiplier);
+    }
+
+    public void setShowcase(final Target target, final boolean animate, final float newScale) {
         postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -243,12 +249,22 @@ public class ShowcaseView extends RelativeLayout
                 if (targetPoint != null) {
                     mHasNoTarget = false;
                     if (animate) {
-                        Animator animator = PointAnimator.ofPoints(ShowcaseView.this, targetPoint);
-                        animator.setDuration(getConfigOptions().fadeInDuration);
-                        animator.setInterpolator(INTERPOLATOR);
-                        animator.start();
+                        AnimatorSet set = new AnimatorSet();
+                        set.setDuration(getConfigOptions().fadeInDuration);
+                        set.setInterpolator(INTERPOLATOR);
+
+                        Animator moveAnimator = PointAnimator.ofPoints(ShowcaseView.this, targetPoint);
+                        if (newScale != scaleMultiplier) {
+                            ObjectAnimator scaleAnimator = ObjectAnimator.ofFloat(ShowcaseView.this, "scaleMultiplier", scaleMultiplier, newScale);
+                            set.playTogether(moveAnimator, scaleAnimator);
+                        } else {
+                            set.play(moveAnimator);
+                        }
+
+                        set.start();
                     } else {
                         setShowcasePosition(targetPoint);
+                        setScaleMultiplier(newScale);
                     }
                 } else {
                     mHasNoTarget = true;
