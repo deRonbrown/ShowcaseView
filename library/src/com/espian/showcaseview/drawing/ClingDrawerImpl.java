@@ -80,8 +80,6 @@ public class ClingDrawerImpl implements ClingDrawer {
             return false;
         }
 
-        Log.d("ShowcaseView", "Recalculated");
-
         mShowcaseRect.left = cx - dw / 2;
         mShowcaseRect.top = cy - dh / 2;
         mShowcaseRect.right = cx + dw / 2;

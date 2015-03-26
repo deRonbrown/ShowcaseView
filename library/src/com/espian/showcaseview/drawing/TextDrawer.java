@@ -12,7 +12,11 @@ public interface TextDrawer {
 
     void draw(Canvas canvas, boolean hasPositionChanged);
 
+    CharSequence getDetails();
+
     void setDetails(CharSequence details);
+
+    CharSequence getTitle();
 
     void setTitle(CharSequence title);
 

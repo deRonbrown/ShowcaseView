@@ -17,7 +17,7 @@ import android.text.style.TextAppearanceSpan;
  * Draws the text as required by the ShowcaseView
  */
 public class TextDrawerImpl implements TextDrawer {
-	
+
 	private static final int PADDING = 24;
 	private static final int ACTIONBAR_PADDING = 66;
 
@@ -78,12 +78,22 @@ public class TextDrawerImpl implements TextDrawer {
     }
 
     @Override
+    public CharSequence getDetails() {
+        return mDetails;
+    }
+
+    @Override
     public void setDetails(CharSequence details) {
         if (details != null) {
             SpannableString ssbDetail = new SpannableString(details);
             ssbDetail.setSpan(mDetailSpan, 0, ssbDetail.length(), 0);
             mDetails = ssbDetail;
         }
+    }
+
+    @Override
+    public CharSequence getTitle() {
+        return mTitle;
     }
 
     @Override
@@ -107,7 +117,7 @@ public class TextDrawerImpl implements TextDrawer {
     	Rect showcase = showcaseView.hasShowcaseView() ?
     			mCalculator.getShowcaseRect() :
     			new Rect();
-    	
+
     	int[] areas = new int[4]; //left, top, right, bottom
     	areas[0] = showcase.left * canvasH;
     	areas[1] = showcase.top * canvasW;
@@ -119,7 +129,7 @@ public class TextDrawerImpl implements TextDrawer {
     		if(areas[i] > areas[largest])
     			largest = i;
     	}
-    	
+
     	// Position text in largest area
     	switch(largest) {
     	case 0:
@@ -155,7 +165,7 @@ public class TextDrawerImpl implements TextDrawer {
 	    		mBestTextPosition[2] /= 2;
 	    		mBestTextPosition[0] += canvasW / 4;
 	    		break;
-	    	} 
+	    	}
     	} else {
     		// As text is not centered add actionbar padding if the text is left or right
 	    	switch(largest) {

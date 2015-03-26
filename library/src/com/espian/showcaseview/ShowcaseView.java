@@ -37,6 +37,7 @@ import com.espian.showcaseview.utils.Calculator;
 import com.espian.showcaseview.utils.PointAnimator;
 import com.github.espiandev.showcaseview.R;
 import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorListenerAdapter;
 import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 
@@ -96,10 +97,14 @@ public class ShowcaseView extends RelativeLayout
     private boolean mHasNoTarget = false;
 
     protected ShowcaseView(Context context) {
-        this(context, null, R.styleable.CustomTheme_showcaseViewStyle);
+        this(context, null);
     }
 
-    protected ShowcaseView(Context context, AttributeSet attrs, int defStyle) {
+    protected ShowcaseView(Context context, ConfigOptions options) {
+        this(context, null, R.styleable.CustomTheme_showcaseViewStyle, options);
+    }
+
+    protected ShowcaseView(Context context, AttributeSet attrs, int defStyle, ConfigOptions options) {
         super(context, attrs, defStyle);
 
         // Get the attributes for the ShowcaseView
@@ -131,7 +136,9 @@ public class ShowcaseView extends RelativeLayout
         mTextDrawer.setTitleStyling(context, titleTextAppearance);
         mTextDrawer.setDetailStyling(context, detailTextAppearance);
 
-        ConfigOptions options = new ConfigOptions();
+        if (options == null) {
+            options = new ConfigOptions();
+        }
         options.showcaseId = getId();
         setConfigOptions(options);
 
@@ -151,6 +158,7 @@ public class ShowcaseView extends RelativeLayout
             return;
         }
 
+        scaleMultiplier = mOptions.scaleMultiplier;
         showcaseRadius = metricScale * INNER_CIRCLE_RADIUS;
         setOnTouchListener(this);
 
@@ -242,6 +250,10 @@ public class ShowcaseView extends RelativeLayout
     }
 
     public void setShowcase(final Target target, final boolean animate, final float newScale) {
+        setShowcase(target, animate, newScale, null, null);
+    }
+
+    public void setShowcase(final Target target, final boolean animate, final float newScale, final String newTitle, final String newDetail) {
         postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -260,6 +272,23 @@ public class ShowcaseView extends RelativeLayout
                         } else {
                             set.play(moveAnimator);
                         }
+
+                        final CharSequence title = newTitle != null ? newTitle : mTextDrawer.getTitle();
+                        final CharSequence details = newDetail != null ? newDetail : mTextDrawer.getDetails();
+                        set.addListener(new AnimatorListenerAdapter() {
+
+                            @Override
+                            public void onAnimationStart(Animator animation) {
+                                mTextDrawer.setTitle("");
+                                mTextDrawer.setDetails("");
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animator animation) {
+                                mTextDrawer.setTitle(title);
+                                mTextDrawer.setDetails(details);
+                            }
+                        });
 
                         set.start();
                     } else {
@@ -653,7 +682,7 @@ public class ShowcaseView extends RelativeLayout
     public static ShowcaseView insertShowcaseView(View viewToShowcase, Activity activity,
             String title,
             String detailText, ConfigOptions options) {
-        ShowcaseView sv = new ShowcaseView(activity);
+        ShowcaseView sv = new ShowcaseView(activity, options);
         if (options != null) {
             sv.setConfigOptions(options);
         }
@@ -681,7 +710,7 @@ public class ShowcaseView extends RelativeLayout
     @Deprecated
     public static ShowcaseView insertShowcaseView(View viewToShowcase, Activity activity, int title,
             int detailText, ConfigOptions options) {
-        ShowcaseView sv = new ShowcaseView(activity);
+        ShowcaseView sv = new ShowcaseView(activity, options);
         if (options != null) {
             sv.setConfigOptions(options);
         }
@@ -727,7 +756,7 @@ public class ShowcaseView extends RelativeLayout
     @Deprecated
     public static ShowcaseView insertShowcaseView(int x, int y, Activity activity, String title,
             String detailText, ConfigOptions options) {
-        ShowcaseView sv = new ShowcaseView(activity);
+        ShowcaseView sv = new ShowcaseView(activity, options);
         if (options != null) {
             sv.setConfigOptions(options);
         }
@@ -747,7 +776,7 @@ public class ShowcaseView extends RelativeLayout
     @Deprecated
     public static ShowcaseView insertShowcaseView(int x, int y, Activity activity, int title,
             int detailText, ConfigOptions options) {
-        ShowcaseView sv = new ShowcaseView(activity);
+        ShowcaseView sv = new ShowcaseView(activity, options);
         if (options != null) {
             sv.setConfigOptions(options);
         }
@@ -785,7 +814,7 @@ public class ShowcaseView extends RelativeLayout
     @Deprecated
     public static ShowcaseView insertShowcaseViewWithType(int type, int itemId, Activity activity,
             String title, String detailText, ConfigOptions options) {
-        ShowcaseView sv = new ShowcaseView(activity);
+        ShowcaseView sv = new ShowcaseView(activity, options);
         if (options != null) {
             sv.setConfigOptions(options);
         }
@@ -814,7 +843,7 @@ public class ShowcaseView extends RelativeLayout
     @Deprecated
     public static ShowcaseView insertShowcaseViewWithType(int type, int itemId, Activity activity,
             int title, int detailText, ConfigOptions options) {
-        ShowcaseView sv = new ShowcaseView(activity);
+        ShowcaseView sv = new ShowcaseView(activity, options);
         if (options != null) {
             sv.setConfigOptions(options);
         }
@@ -838,8 +867,8 @@ public class ShowcaseView extends RelativeLayout
      */
     private static ShowcaseView insertShowcaseViewInternal(Target target, Activity activity, String title,
                                                            String detail, ConfigOptions options) {
-        ShowcaseView sv = new ShowcaseView(activity);
-        sv.setConfigOptions(options);
+        ShowcaseView sv = new ShowcaseView(activity, options);
+        sv.setVisibility(View.INVISIBLE);
         if (sv.getConfigOptions().insert == INSERT_TO_DECOR) {
             ((ViewGroup) activity.getWindow().getDecorView()).addView(sv);
         } else {
@@ -847,6 +876,7 @@ public class ShowcaseView extends RelativeLayout
         }
         sv.setShowcase(target);
         sv.setText(title, detail);
+        sv.show();
         return sv;
     }
 
@@ -911,11 +941,16 @@ public class ShowcaseView extends RelativeLayout
          * Allow custom positioning of the button within the showcase view.
          */
         public LayoutParams buttonLayoutParams = null;
-        
+
         /**
          * Whether the text should be centered or stretched in the available space
          */
         public boolean centerText = false;
+
+        /**
+         * Initial scale multiplier
+         */
+        public float scaleMultiplier = 1.0f;
     }
 
     public float getScaleMultiplier() {
