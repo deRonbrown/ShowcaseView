@@ -21,6 +21,7 @@ public class ClingDrawerImpl implements ClingDrawer {
     private Paint mEraser;
     private Drawable mShowcaseDrawable;
     private Rect mShowcaseRect;
+    private float[] mCenter = {0, 0};
 
     public ClingDrawerImpl(Resources resources, int showcaseColor) {
         PorterDuffXfermode mBlender = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
@@ -43,6 +44,9 @@ public class ClingDrawerImpl implements ClingDrawer {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
         	canvas.drawCircle(x, y, radius, mEraser);
         }
+
+        mCenter[0] = x;
+        mCenter[1] = y;
 
         mShowcaseDrawable.setBounds(mShowcaseRect);
         mShowcaseDrawable.draw(canvas);
@@ -92,6 +96,11 @@ public class ClingDrawerImpl implements ClingDrawer {
     @Override
     public Rect getShowcaseRect() {
         return mShowcaseRect;
+    }
+
+    @Override
+    public float[] getCenter() {
+        return mCenter;
     }
 
 }

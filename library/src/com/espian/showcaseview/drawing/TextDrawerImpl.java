@@ -20,6 +20,8 @@ public class TextDrawerImpl implements TextDrawer {
 
 	private static final int PADDING = 24;
 	private static final int ACTIONBAR_PADDING = 66;
+    private static final int TOP_EXTRA = 48;
+    private static final int BOTTOM_EXTRA = 24;
 
     private final TextPaint mPaintTitle;
     private final TextPaint mPaintDetail;
@@ -28,6 +30,8 @@ public class TextDrawerImpl implements TextDrawer {
     private float mDensityScale;
     private ShowcaseAreaCalculator mCalculator;
     private float[] mBestTextPosition = new float[3];
+    private int mDetailHeight;
+    private boolean mIsTopPositioned = false;
     private DynamicLayout mDynamicTitleLayout;
     private DynamicLayout mDynamicDetailLayout;
     private TextAppearanceSpan mTitleSpan;
@@ -55,8 +59,16 @@ public class TextDrawerImpl implements TextDrawer {
                     mDynamicTitleLayout = new DynamicLayout(mTitle, mPaintTitle,
                             (int) textPosition[2], Layout.Alignment.ALIGN_NORMAL,
                             1.0f, 1.0f, true);
+
+                    // Fake/temp layout for height calculation
+                    DynamicLayout tempDetail = new DynamicLayout(mDetails, mPaintDetail,
+                            (int) textPosition[2],
+                            Layout.Alignment.ALIGN_NORMAL,
+                            1.2f, 1.0f, true);
+                    mDetailHeight = tempDetail.getHeight();
                 }
-                canvas.translate(textPosition[0], textPosition[1]);
+                int topSubtract = mIsTopPositioned ? mDetailHeight : 0;
+                canvas.translate(textPosition[0], textPosition[1] - topSubtract);
                 mDynamicTitleLayout.draw(canvas);
                 canvas.restore();
             }
@@ -69,7 +81,8 @@ public class TextDrawerImpl implements TextDrawer {
                             Layout.Alignment.ALIGN_NORMAL,
                             1.2f, 1.0f, true);
                 }
-                canvas.translate(textPosition[0], textPosition[1] + mDynamicTitleLayout.getHeight());
+                int topSubtract = mIsTopPositioned ? mDetailHeight : 0;
+                canvas.translate(textPosition[0], textPosition[1] + mDynamicTitleLayout.getHeight() - topSubtract);
                 mDynamicDetailLayout.draw(canvas);
                 canvas.restore();
 
@@ -130,27 +143,36 @@ public class TextDrawerImpl implements TextDrawer {
     			largest = i;
     	}
 
-    	// Position text in largest area
+        float scaleMultiplier = showcaseView.getScaleMultiplier();
+        float radius = showcaseView.getShowcaseRadius();
+        float[] center = mCalculator.getCenter();
+        float radiiValue = (scaleMultiplier * radius) + (scaleMultiplier * radius / 2);
+
+    	// Position text just above or below showcase
     	switch(largest) {
     	case 0:
     		mBestTextPosition[0] = PADDING * mDensityScale;
-    		mBestTextPosition[1] = PADDING * mDensityScale;
+            mBestTextPosition[1] = center[1] - radiiValue - TOP_EXTRA * mDensityScale;
     		mBestTextPosition[2] = showcase.left - 2 * PADDING * mDensityScale;
+            mIsTopPositioned = true;
     		break;
     	case 1:
     		mBestTextPosition[0] = PADDING * mDensityScale;
-    		mBestTextPosition[1] = (PADDING + ACTIONBAR_PADDING) * mDensityScale;
+            mBestTextPosition[1] = center[1] - radiiValue - TOP_EXTRA * mDensityScale;
     		mBestTextPosition[2] = canvasW - 2 * PADDING * mDensityScale;
+            mIsTopPositioned = true;
     		break;
     	case 2:
     		mBestTextPosition[0] = showcase.right + PADDING * mDensityScale;
-    		mBestTextPosition[1] = PADDING * mDensityScale;
+            mBestTextPosition[1] = center[1] + radiiValue + BOTTOM_EXTRA * mDensityScale;
     		mBestTextPosition[2] = (canvasW - showcase.right) - 2 * PADDING * mDensityScale;
+            mIsTopPositioned = false;
     		break;
     	case 3:
     		mBestTextPosition[0] = PADDING * mDensityScale;
-    		mBestTextPosition[1] = showcase.bottom + PADDING * mDensityScale;
+            mBestTextPosition[1] = center[1] + radiiValue + BOTTOM_EXTRA * mDensityScale;
     		mBestTextPosition[2] = canvasW - 2 * PADDING * mDensityScale;
+            mIsTopPositioned = false;
     		break;
     	}
     	if(showcaseView.getConfigOptions().centerText) {

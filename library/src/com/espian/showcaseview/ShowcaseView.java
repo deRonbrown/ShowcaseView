@@ -961,4 +961,8 @@ public class ShowcaseView extends RelativeLayout
         this.scaleMultiplier = scaleMultiplier;
     }
 
+    public float getShowcaseRadius() {
+        return showcaseRadius;
+    }
+
 }

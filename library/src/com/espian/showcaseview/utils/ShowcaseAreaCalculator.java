@@ -10,4 +10,6 @@ public interface ShowcaseAreaCalculator {
     boolean calculateShowcaseRect(float showcaseX, float showcaseY);
 
     Rect getShowcaseRect();
+
+    float[] getCenter();
 }
