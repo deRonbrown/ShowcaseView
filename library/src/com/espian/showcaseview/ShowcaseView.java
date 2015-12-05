@@ -470,8 +470,8 @@ public class ShowcaseView extends RelativeLayout
      * @see com.espian.showcaseview.ShowcaseView#animateGesture(float, float, float, float, boolean)
      */
     public void animateGesture(float offsetStartX, float offsetStartY, float offsetEndX,
-            float offsetEndY) {
-        animateGesture(offsetStartX, offsetStartY, offsetEndX, offsetEndY, false);
+            float offsetEndY, boolean disableEndButton) {
+        animateGesture(offsetStartX, offsetStartY, offsetEndX, offsetEndY, disableEndButton, false);
     }
 
     /**
@@ -483,14 +483,18 @@ public class ShowcaseView extends RelativeLayout
      * @param absoluteCoordinates   If true, this will use absolute coordinates instead of coordinates relative to the center of the showcased view
      */
     public void animateGesture(float startX, float startY, float endX,
-            float endY, boolean absoluteCoordinates) {
+            float endY, boolean disableEndButton, boolean absoluteCoordinates) {
         mHandy = ((LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE))
                 .inflate(R.layout.handy, null);
         addView(mHandy);
+        if (disableEndButton) {
+            mEndButton.setEnabled(false);
+        }
         moveHand(startX, startY, endX, endY, absoluteCoordinates, new AnimationEndListener() {
             @Override
             public void onAnimationEnd() {
                 removeView(mHandy);
+                mEndButton.setEnabled(true);
             }
         });
     }
@@ -575,7 +579,7 @@ public class ShowcaseView extends RelativeLayout
             return true;
         }
 
-        return mOptions.block && distanceFromFocus > showcaseRadius;
+        return true;
     }
 
     /**

@@ -22,7 +22,7 @@
     <style name="ShowcaseView">
         <item name="sv_titleTextAppearance">@style/TextAppearance.ShowcaseView.Title</item>
         <item name="sv_detailTextAppearance">@style/TextAppearance.ShowcaseView.Detail</item>
-        <item name="sv_backgroundColor">#3333B5E5</item>
+        <item name="sv_backgroundColor">#D9000000</item>
         <item name="sv_buttonText">@string/ok</item>
     </style>
 
